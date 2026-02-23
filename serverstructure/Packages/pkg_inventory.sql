@@ -39,6 +39,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_inventory IS
     ) IS
         v_qty_before NUMBER;
     BEGIN
+        pkg_session.g_id_user := p_id_user;
         BEGIN
             SELECT quantity INTO v_qty_before
             FROM Inventory 
@@ -76,6 +77,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_inventory IS
     ) IS 
         v_qty_before NUMBER;
     BEGIN
+        pkg_session.g_id_user := p_id_user;
         SELECT quantity INTO v_qty_before 
         FROM Inventory 
         WHERE id_product = p_id_prod AND id_warehouse = p_id_ware
@@ -113,6 +115,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_inventory IS
     ) IS 
         v_new_id NUMBER;
     BEGIN
+        pkg_session.g_id_user := p_id_user;
         INSERT INTO Products(name, price_buy, price_sell, description, id_supplier)
         VALUES (p_name, p_price_buy, p_price_sell, p_desc, p_id_sup)
         RETURNING id INTO v_new_id;
