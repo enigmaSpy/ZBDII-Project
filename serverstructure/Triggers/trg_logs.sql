@@ -9,7 +9,7 @@ BEGIN
     END IF;
 
     IF UPDATING THEN
-        IF :OLD.name != :NEW.name THEN
+        IF NVL(:OLD.name, 'NULL') != NVL(:NEW.name, 'NULL') THEN
             INSERT INTO Product_Logs(field_name, old_value, new_value, reason, id_product, id_user)
             VALUES('name', :OLD.name, :NEW.name, 'Zmiana nazwy', :NEW.id, pkg_session.g_id_user);
         END IF;
