@@ -7,15 +7,16 @@ CREATE OR REPLACE PACKAGE pkg_admin IS
     );
     PROCEDURE prc_create_user(
         p_role IN Users.role%TYPE,
-        name IN Users.name%TYPE,
-        email IN Users.email%TYPE,
-        password_hash IN Users.password_hash%TYPE,
+        p_name IN Users.name%TYPE,
+        p_email IN Users.email%TYPE,
+        p_password_hash IN Users.password_hash%TYPE,
         p_id_user IN Users.id%TYPE
     );
     PROCEDURE prc_toggle_user(
         p_id_user IN Users.id%TYPE
     );
 END pkg_admin;
+
 CREATE OR REPLACE PACKAGE BODY pkg_admin IS
 
     PROCEDURE prc_add_warehouse(
@@ -52,26 +53,16 @@ CREATE OR REPLACE PACKAGE BODY pkg_admin IS
     PROCEDURE prc_toggle_user(
         p_id_user IN Users.id%TYPE
     )IS
-        v_is_active Users.is_active%TYPE;
     BEGIN
-        SELECT is_active 
-        INTO v_is_active
-        FROM Users
-        WHERE id = p_id_user;
-
         
         UPDATE Users 
         SET is_active = 1 - is_active
-        WHERE id = p_id_user;
-        COMMIT;
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
+        WHERE id = p_id_user 
+        AND is_active = 1;
+        IF SQL%ROWCOUNT = 0 THEN
             RAISE_APPLICATION_ERROR(-20002, 'Użytkownik nie istnieje');
+        END IF;
+        COMMIT;
     END prc_toggle_user;
 END pkg_admin;
-
-
-
-
-
-
+/

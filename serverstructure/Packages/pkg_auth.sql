@@ -1,25 +1,28 @@
-CREATE OR REPLACE PACKAGE pkg_auth IS 
+CREATE OR REPLACE PACKAGE pkg_auth IS
     FUNCTION fn_check_login(
         p_email IN Users.email%TYPE,
         p_password_hash IN Users.password_hash%TYPE
-    )RETURN Users.id%TYPE;
+    ) RETURN Users.id%TYPE;
+
     PROCEDURE prc_login(
         p_email IN Users.email%TYPE,
         p_password_hash IN Users.password_hash%TYPE,
         p_ipaddress  IN Login_Logs.ipaddress%TYPE
     );
+
     PROCEDURE prc_register_login_attempt(
-        p_email      IN Users.email%TYPE,
+        p_email IN Login_Logs.email_attempted%TYPE,
         p_is_success IN Login_Logs.is_success%TYPE,
         p_ipaddress  IN Login_Logs.ipaddress%TYPE,
         p_id_user    IN Login_Logs.id_user%TYPE
     );
+
     PROCEDURE prc_change_pass(
         p_id_user IN Users.id%TYPE,
         p_password_hash IN Users.password_hash%TYPE
     );
 END pkg_auth;
-
+/
 CREATE OR REPLACE PACKAGE BODY pkg_auth IS
     FUNCTION fn_check_login(
     p_email IN Users.email%TYPE,
@@ -43,7 +46,7 @@ EXCEPTION
 END fn_check_login;
 
   PROCEDURE prc_register_login_attempt(
-        p_email      IN Login_Logs.email_attempted%TYPE,
+        p_email IN Login_Logs.email_attempted%TYPE,
         p_is_success IN Login_Logs.is_success%TYPE,
         p_ipaddress  IN Login_Logs.ipaddress%TYPE,
         p_id_user    IN Login_Logs.id_user%TYPE
@@ -104,3 +107,4 @@ PROCEDURE prc_login(
         END IF;
     END prc_change_pass;
 END pkg_auth;
+/
