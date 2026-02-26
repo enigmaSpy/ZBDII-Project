@@ -24,13 +24,10 @@ CREATE OR REPLACE PACKAGE pkg_inventory IS
     );
 
 END pkg_inventory;
-/
+
 
 CREATE OR REPLACE PACKAGE BODY pkg_inventory IS
 
-    -- ==========================================
-    -- 1. PRZYJMOWANIE TOWARU (UPSERT)
-    -- ==========================================
     PROCEDURE prc_restock(
         p_id_prod IN Inventory.id_product%TYPE,
         p_id_ware IN Inventory.id_warehouse%TYPE,
