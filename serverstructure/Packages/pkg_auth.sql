@@ -5,9 +5,10 @@ CREATE OR REPLACE PACKAGE pkg_auth IS
     ) RETURN Users.id%TYPE;
 
     PROCEDURE prc_login(
-        p_email IN Users.email%TYPE,
+        p_email         IN Users.email%TYPE,
         p_password_hash IN Users.password_hash%TYPE,
-        p_ipaddress  IN Login_Logs.ipaddress%TYPE
+        p_ipaddress     IN Login_Logs.ipaddress%TYPE,
+        p_out_id        OUT Users.id%TYPE 
     );
 
     PROCEDURE prc_register_login_attempt(
@@ -66,18 +67,20 @@ END fn_check_login;
     END prc_register_login_attempt;
 
 PROCEDURE prc_login(
-        p_email      IN Users.email%TYPE,
+        p_email         IN Users.email%TYPE,
         p_password_hash IN Users.password_hash%TYPE,
-        p_ipaddress  IN Login_Logs.ipaddress%TYPE
+        p_ipaddress     IN Login_Logs.ipaddress%TYPE,
+        p_out_id        OUT Users.id%TYPE 
     )IS 
         v_id Users.id%TYPE;
     BEGIN
         v_id:= fn_check_login(p_email, p_password_hash);
         IF v_id IS NOT NULL THEN
-            pkg_session.g_id_user:=v_id;
             prc_register_login_attempt(p_email, 1, p_ipaddress, v_id);
+            p_out_id :=v_id;
         ELSE
             prc_register_login_attempt(p_email, 0, p_ipaddress, NULL);
+            RAISE_APPLICATION_ERROR(-20001, 'Błędne dane logowania');
         END IF;
     EXCEPTION
         WHEN OTHERS THEN 
