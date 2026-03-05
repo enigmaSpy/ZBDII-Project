@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -120,5 +119,11 @@
     }
   body {
     @apply bg-background text-foreground;
+    }
+}
+
+@layer utilities{
+    .navLink{
+        @apply w-full justify-start text-zinc-300 hover:text-black cursor-pointer;
     }
 }
