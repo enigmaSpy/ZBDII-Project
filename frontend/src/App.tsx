@@ -1,12 +1,27 @@
-function App() {
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import {LoginPage} from "./pages/LoginPage"
+import {DashboardPage} from "./pages/DashboardPage"
+import {Layout} from "./components/Layout"
 
+export default function App() {
   return (
-    <>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <BrowserRouter>
+      <Routes>
+        {/* BRAMA ZEWNĘTRZNA - tutaj nie ma paska bocznego */}
+        <Route path="/login" element={<LoginPage />} />
+        
+        {/* STREFA WEWNĘTRZNA - chroniona przez Layout i pasek boczny */}
+        <Route element={<Layout />}>
+          {/* Jeśli ktoś wejdzie na goły adres /, wyrzucamy go do magazynu */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          
+          {/* Nasze pokoje (wpadają w miejsce <Outlet /> w Layoucie) */}
+          <Route path="/dashboard" element={<DashboardPage />} />
+          
+          {/* Miejsce na przyszłe pokoje (Produkty, Pracownicy itp.): */}
+          {/* <Route path="/products" element={<ProductsPage />} /> */}
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
-
-export default App
