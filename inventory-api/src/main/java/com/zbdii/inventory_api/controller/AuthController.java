@@ -2,6 +2,7 @@ package com.zbdii.inventory_api.controller;
 
 import com.zbdii.inventory_api.record.LoginRequest;
 import com.zbdii.inventory_api.record.LoginResponse;
+import com.zbdii.inventory_api.record.LoginResult;
 import com.zbdii.inventory_api.service.AuthService;
 import com.zbdii.inventory_api.service.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,8 +27,8 @@ public class AuthController {
             HttpServletRequest httpRequest
             ){
         String ipAddress = httpRequest.getRemoteAddr();
-        Long userId = authService.loginUser(request, ipAddress);
-        String jwtToken = jwtService.generateToken(userId);
+        LoginResult userData = authService.loginUser(request, ipAddress);
+        String jwtToken = jwtService.generateToken(userData.id(), userData.role());
         return new LoginResponse(jwtToken,"Autentykacja zakończona sukcesem");
     }
 }

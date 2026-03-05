@@ -22,10 +22,10 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(Long userId) {
+    public String generateToken(Long userId, String role) {
         return Jwts.builder()
                 .setSubject(String.valueOf(userId)) // Kto jest właścicielem biletu?
-                .claim("role", "ADMIN") // Na razie wpisujemy ADMIN na sztywno, później podepniemy to pod bazę!
+                .claim("role", role) // Na razie wpisujemy ADMIN na sztywno, później podepniemy to pod bazę!
                 .setIssuedAt(new Date()) // Czas wydania
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) // Czas wygaśnięcia
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256) // Przybijamy pieczęć!

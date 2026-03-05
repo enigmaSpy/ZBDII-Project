@@ -8,7 +8,8 @@ CREATE OR REPLACE PACKAGE pkg_auth IS
         p_email         IN Users.email%TYPE,
         p_password_hash IN Users.password_hash%TYPE,
         p_ipaddress     IN Login_Logs.ipaddress%TYPE,
-        p_out_id        OUT Users.id%TYPE 
+        p_out_id        OUT Users.id%TYPE, 
+        p_out_role      OUT Users.role%TYPE
     );
 
     PROCEDURE prc_register_login_attempt(
@@ -70,21 +71,30 @@ PROCEDURE prc_login(
         p_email         IN Users.email%TYPE,
         p_password_hash IN Users.password_hash%TYPE,
         p_ipaddress     IN Login_Logs.ipaddress%TYPE,
-        p_out_id        OUT Users.id%TYPE 
+        p_out_id        OUT Users.id%TYPE, 
+        p_out_role      OUT Users.role%TYPE 
     )IS 
         v_id Users.id%TYPE;
+        v_role Users.role%TYPE;
     BEGIN
         v_id:= fn_check_login(p_email, p_password_hash);
         IF v_id IS NOT NULL THEN
             prc_register_login_attempt(p_email, 1, p_ipaddress, v_id);
             p_out_id :=v_id;
+            
+            SELECT role 
+            INTO v_role
+            FROM Users WHERE id = v_id;
+            p_out_role := v_role;
         ELSE
             prc_register_login_attempt(p_email, 0, p_ipaddress, NULL);
             RAISE_APPLICATION_ERROR(-20001, 'Błędne dane logowania');
         END IF;
     EXCEPTION
-        WHEN OTHERS THEN 
-            RAISE_APPLICATION_ERROR(-20002, SQLERRM);
+        WHEN NO_DATA_FOUND THEN 
+            RAISE_APPLICATION_ERROR(-20002, 'Nie znaleziono użytkownika');
+        WHEN OTHERS THEN
+            RAISE_APPLICATION_ERROR(-20003, SQLERRM);
     END prc_login;
 
   
