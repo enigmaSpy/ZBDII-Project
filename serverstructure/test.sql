@@ -1,1 +1,1 @@
-SELECT * FROM INVENTORY;
+SELECT * FROM Inventory;
