@@ -1,9 +1,10 @@
 package com.zbdii.inventory_api.record;
 
-public record WareHouseRequest(
+public record AddWarehouseRequest(
         String name,
         String street,
         String city,
-        String country
+        String country,
+        Long executor_id
 ) {
 }

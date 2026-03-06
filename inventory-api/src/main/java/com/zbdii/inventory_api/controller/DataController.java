@@ -2,6 +2,7 @@ package com.zbdii.inventory_api.controller;
 
 import com.zbdii.inventory_api.record.ProductDto;
 import com.zbdii.inventory_api.record.WarehouseDto;
+import com.zbdii.inventory_api.record.WarehouseSummaryDto;
 import com.zbdii.inventory_api.service.DataService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,5 +27,9 @@ public class DataController {
     @GetMapping("/warehouses")
     public List<WarehouseDto> getWarehouses() {
         return dataService.getAllWarehouses();
+    }
+    @GetMapping("/summary")
+    public List<WarehouseSummaryDto> getSummary(){
+        return dataService.getWarehouseSummaries();
     }
 }

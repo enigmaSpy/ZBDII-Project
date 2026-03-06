@@ -1,6 +1,6 @@
 package com.zbdii.inventory_api.service;
 
-import com.zbdii.inventory_api.record.WareHouseRequest;
+import com.zbdii.inventory_api.record.AddWarehouseRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ public class WarehouseService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void  addWarehouse(WareHouseRequest request, Long executorId){
+    public void  addWarehouse(AddWarehouseRequest request, Long executorId){
         String sql = "CALL pkg_admin.prc_add_warehouse(?,?,?,?,?)";
 
         jdbcTemplate.update(sql,

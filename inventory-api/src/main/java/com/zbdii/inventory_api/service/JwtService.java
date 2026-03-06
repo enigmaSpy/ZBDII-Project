@@ -25,10 +25,10 @@ public class JwtService {
     public String generateToken(Long userId, String role) {
         return Jwts.builder()
                 .setSubject(String.valueOf(userId)) // Kto jest właścicielem biletu?
-                .claim("role", role) // Na razie wpisujemy ADMIN na sztywno, później podepniemy to pod bazę!
+                .claim("role", role)
                 .setIssuedAt(new Date()) // Czas wydania
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) // Czas wygaśnięcia
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256) // Przybijamy pieczęć!
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256) // Przybijamy pieczęć
                 .compact(); // Kompresujemy do jednego długiego łańcucha znaków
     }
 
