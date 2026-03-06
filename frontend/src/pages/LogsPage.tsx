@@ -58,7 +58,7 @@ export const LogsPage = () => {
     <div className="p-8 w-full max-w-5xl">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-red-500">
-          🚨 Audyt Bezpieczeństwa (Logi)
+          Audyt Logów
         </h1>
         <p className="text-slate-400 mt-2">Historia autentykacji w Matrycy</p>
       </div>
