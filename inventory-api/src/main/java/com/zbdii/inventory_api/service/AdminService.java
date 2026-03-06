@@ -1,6 +1,7 @@
 package com.zbdii.inventory_api.service;
 
 import com.zbdii.inventory_api.record.CreateUserRequest;
+import com.zbdii.inventory_api.record.LogDto;
 import com.zbdii.inventory_api.record.UserDto;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -41,5 +42,15 @@ public class AdminService {
                 temporaryPassword,
                 executorId
         );
+    }
+    public List<LogDto> getLoginLogs() {
+        String sql = "SELECT email_attempted, is_success, ipaddress, occurred_at FROM Login_Logs";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new LogDto(
+                rs.getString("email_attempted"),
+                rs.getInt("is_success"),
+                rs.getString("ipaddress"),
+                rs.getTimestamp("occurred_at")
+        ));
     }
 }

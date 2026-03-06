@@ -1,6 +1,7 @@
 package com.zbdii.inventory_api.controller;
 
 import com.zbdii.inventory_api.record.CreateUserRequest;
+import com.zbdii.inventory_api.record.LogDto;
 import com.zbdii.inventory_api.record.UserDto;
 import com.zbdii.inventory_api.service.AdminService;
 import com.zbdii.inventory_api.service.JwtService;
@@ -33,5 +34,9 @@ public class AdminController {
         Long executorId = jwtService.extractUserId(authHeader);
         adminService.createUser(request, executorId);
         return "Utworzono użytkownika: " + request.email();
+    }
+    @GetMapping("/logs")
+    public List<LogDto> getLogs() {
+        return adminService.getLoginLogs();
     }
 }
