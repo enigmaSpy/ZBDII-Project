@@ -10,14 +10,22 @@ interface dataInterface {
   id: number;
   name: string;
 }
+interface SummaryInterface {
+  warehouseId: number;
+  warehouseName: string;
+  totalItems: number;
+  totalValue: number;
+}
 const URL_PRODUCT = "http://localhost:8081/api/data/products";
 const URL_WAREHOUSE = "http://localhost:8081/api/data/warehouses";
+const URL_SUMMARY = "http://localhost:8081/api/data/summary";
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState("0");
   const [information, setInformation] = useState("");
   const [products, setProducts] = useState<dataInterface[]>([]);
   const [warehouses, setWarehouses] = useState<dataInterface[]>([]);
+  const [summaries, setSummaries] = useState<SummaryInterface[]>([]);
 
   const {selectedProduct, selectedWarehouse} = useInventory();
 
@@ -28,17 +36,21 @@ export const DashboardPage = () => {
 
       const headers = { Authorization: `Bearer ${token}` };
 
-      const [resProd, resWare] = await Promise.all([
+      const [resProd, resWare, resSum] = await Promise.all([
         fetch(URL_PRODUCT, { headers }),
         fetch(URL_WAREHOUSE, { headers }),
+        fetch(URL_SUMMARY, {headers})
       ]);
 
-      const [prodData, wareData] = await Promise.all([
-        resProd.ok ? resProd.json() : [null],
-        resWare.ok ? resWare.json() : [null],
+      const [prodData, wareData, sumData] = await Promise.all([
+        resProd.ok ? resProd.json() : null,
+        resWare.ok ? resWare.json() : null,
+        resSum.ok ? resSum.json() : null, 
       ]);
+
       if (prodData) setProducts(prodData);
       if (wareData) setWarehouses(wareData);
+      if (sumData) setSummaries(sumData);
     };
     getData();
   }, []);
@@ -81,17 +93,19 @@ export const DashboardPage = () => {
   };
 
   return (
-     <div className="flex h-screen w-full items-center justify-center bg-slate-950 p-4">
-      <Card className="w-100 border-slate-800 bg-slate-900/70 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="text-slate-100">Przyjęcia / Wydania</CardTitle>
-        </CardHeader>
-        <SelectBlock items={products} labelDesc="Wybierz Produkt" type="product"/>
-        <SelectBlock items={warehouses} labelDesc="Wybierz Magazyn" type="warehouse"/>
-        <CardContent className="flex flex-col gap-4">
+     <div className="min-h-screen w-full bg-slate-950 p-6 lg:p-10">
+  <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8 items-start">
+    
+    <div className="w-full lg:w-[380px] shrink-0">
+      <h2 className="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-3">Operacje magazynowe</h2>
+      <Card className="border-slate-800 bg-slate-900/60 backdrop-blur-sm">
+        <CardContent className="flex flex-col gap-5 pt-6">
           
+          <SelectBlock items={products} labelDesc="Produkt" type="product"/>
+          <SelectBlock items={warehouses} labelDesc="Magazyn" type="warehouse"/>
+
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-slate-300">
+            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               Ilość sztuk
             </label>
             <Input
@@ -99,32 +113,69 @@ export const DashboardPage = () => {
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               min="1"
-              className="bg-slate-950 border-slate-700 text-slate-100 placeholder:text-slate-600 focus:ring-slate-700"
+              className="bg-slate-950/80 border-slate-700 text-slate-100 placeholder:text-slate-600 focus:ring-1 focus:ring-slate-500"
             />
           </div>
 
-          <div className="flex gap-3 flex-col sm:flex-row">
+          <div className="flex gap-3">
             <Button
-              className="flex-1 bg-indigo-700/80 hover:bg-indigo-700 text-white border border-indigo-600/30 shadow-sm"
+              className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-950 transition-all"
               onClick={() => wykonajOperacje("restock")}
             >
-              📥 Dostawa
+              ↓ Dostawa
             </Button>
             <Button
-              className="flex-1 bg-teal-700/80 hover:bg-teal-700 text-white border border-teal-600/30 shadow-sm"
+              className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-100 shadow-md transition-all"
               onClick={() => wykonajOperacje("dispatch")}
             >
-              📤 Wysyłka
+              ↑ Wysyłka
             </Button>
           </div>
 
           {information && (
-            <div className="mt-4 p-3 bg-slate-950/60 border border-slate-800/80 rounded text-sm font-mono text-center text-slate-300">
+            <div className="p-3 rounded-md bg-slate-950 border border-slate-700 text-xs font-mono text-center text-slate-400 leading-relaxed">
               {information}
             </div>
           )}
         </CardContent>
       </Card>
     </div>
+    <div className="w-full flex flex-col gap-5">
+      <div>
+        <h2 className="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-1">Raport analityczny</h2>
+        <p className="text-slate-600 text-xs">Aktualny stan magazynów</p>
+      </div>
+
+      {summaries.length === 0 ? (
+        <div className="flex items-center justify-center h-32 rounded-lg border border-dashed border-slate-800 text-slate-600 text-sm">
+          Brak danych do wyświetlenia
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {summaries.map((summary) => (
+            <Card key={summary.warehouseId} className="border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 transition-colors">
+              <CardContent className="pt-5">
+                <div className="text-sm font-semibold text-slate-200 mb-4">{summary.warehouseName}</div>
+                
+                <div className="flex flex-col gap-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-500 uppercase tracking-wide">Zapas</span>
+                    <span className="font-mono text-xl font-bold text-slate-100">{summary.totalItems} <span className="text-xs text-slate-500 font-normal">szt.</span></span>
+                  </div>
+                  <div className="h-px bg-slate-800"/>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-500 uppercase tracking-wide">Wartość</span>
+                    <span className="font-mono text-xl font-bold text-indigo-400">{summary.totalValue.toFixed(2)} <span className="text-xs text-slate-500 font-normal">PLN</span></span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+
+  </div>
+</div>
   );
 };

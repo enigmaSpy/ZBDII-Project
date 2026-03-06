@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import {LoginPage} from "./pages/LoginPage"
 import {DashboardPage} from "./pages/DashboardPage"
 import {Layout} from "./components/Layout"
+import { ProductsPage } from "./pages/ProductsPage"
+import { WarehousesPage } from "./pages/WarehousesPage"
 
 export default function App() {
   return (
@@ -19,7 +21,8 @@ export default function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           
           {/* Miejsce na przyszłe pokoje (Produkty, Pracownicy itp.): */}
-          {/* <Route path="/products" element={<ProductsPage />} /> */}
+          <Route path="/products" element={<ProductsPage />} /> 
+          <Route path="/warehouses" element={<WarehousesPage />} /> 
         </Route>
       </Routes>
     </BrowserRouter>
