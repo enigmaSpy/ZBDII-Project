@@ -1,30 +1,33 @@
 import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-const PRODUCTS_URL ="http://localhost:8081/api/data/products"
-const ADD_NEWP_URL= "http://localhost:8081/api/products"
-interface ProductsData{
-  id: number; name: string; isActive:number;
+const PRODUCTS_URL = "http://localhost:8081/api/data/products"
+const ADD_NEWP_URL = "http://localhost:8081/api/products"
+const SUPPLIERS_URL = "http://localhost:8081/api/data/suppliers"
+
+interface ProductsData {
+  id: number; name: string; isActive: number;
+}
+interface SupplierData {
+  id: number; name: string;
 }
 
 export const ProductsPage = () => {
-  
   const [products, setProducts] = useState<ProductsData[]>([])
+  const [suppliers, setSuppliers] = useState<SupplierData[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  
   const [newName, setNewName] = useState("")
   const [priceBuy, setPriceBuy] = useState("")
   const [priceSell, setPriceSell] = useState("")
   const [desc, setDesc] = useState("")
-  const [supplierId, setSupplierId] = useState("1") 
-  
+  const [supplierId, setSupplierId] = useState("")
   const [message, setMessage] = useState("")
 
- 
   const fetchProducts = async () => {
     const token = localStorage.getItem("ziibd_token")
     if (!token) return
@@ -34,14 +37,27 @@ export const ProductsPage = () => {
       })
       if (res.ok) setProducts(await res.json())
     } catch (error) {
-      console.error("Błąd pobierania matrycy:", error)
+      console.error("Błąd pobierania produktów:", error)
+    }
+  }
+
+  const fetchSuppliers = async () => {
+    const token = localStorage.getItem("ziibd_token")
+    if (!token) return
+    try {
+      const res = await fetch(SUPPLIERS_URL, {
+        headers: { "Authorization": `Bearer ${token}` }
+      })
+      if (res.ok) setSuppliers(await res.json())
+    } catch (error) {
+      console.error("Błąd pobierania dostawców:", error)
     }
   }
 
   useEffect(() => {
     fetchProducts()
+    fetchSuppliers()
   }, [])
-
 
   const handleAddProduct = async () => {
     const token = localStorage.getItem("ziibd_token")
@@ -50,107 +66,118 @@ export const ProductsPage = () => {
     try {
       const res = await fetch(ADD_NEWP_URL, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` 
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
           name: newName,
-          price_buy: parseFloat(priceBuy),   
-          price_sell: parseFloat(priceSell), 
+          price_buy: parseFloat(priceBuy),
+          price_sell: parseFloat(priceSell),
           p_desc: desc,
-          id_supplier: parseInt(supplierId)  
+          id_supplier: parseInt(supplierId)
         })
       })
 
-      if (res.ok) { 
+      if (res.ok) {
         setIsDialogOpen(false)
-        fetchProducts() 
-        
-        
-        setNewName("")
-        setDesc("")
-        setPriceBuy("")
-        setPriceSell("")
-        setSupplierId("1") 
-        setMessage("")
+        fetchProducts()
+        setNewName(""); setDesc(""); setPriceBuy(""); setPriceSell(""); setSupplierId(""); setMessage("")
       } else {
         const errorData = await res.json()
-        setMessage(`Błąd: ${errorData.message || "Odrzucono przez Matrycę"}`)
+        setMessage(`Błąd: ${errorData.message || "Nieznany błąd"}`)
       }
     } catch (error) {
-      setMessage("Krytyczny błąd połączenia z Matrycą.")
+      setMessage("Błąd połączenia z serwerem.")
     }
   }
 
   return (
     <div className="p-8 w-full max-w-5xl">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-slate-100">Katalog Produktów</h1>
-        
-       
+        <div>
+          <h1 className="text-2xl font-bold text-slate-100">Katalog Produktów</h1>
+          <p className="text-xs text-slate-500 mt-1">Lista zarejestrowanych produktów</p>
+        </div>
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-indigo-600 hover:bg-indigo-700">➕ Dodaj Nowy Towar</Button>
+            <Button className="bg-indigo-600 hover:bg-indigo-500">+ Dodaj produkt</Button>
           </DialogTrigger>
-          
+
           <DialogContent className="bg-slate-900 border-slate-800 text-slate-100">
             <DialogHeader>
-              <DialogTitle>Rejestracja Nowego Produktu</DialogTitle>
+              <DialogTitle>Nowy produkt</DialogTitle>
             </DialogHeader>
-            <div className="flex flex-col gap-4 py-4">
+            <div className="flex flex-col gap-3 py-4">
               <Input placeholder="Nazwa produktu" value={newName} onChange={(e) => setNewName(e.target.value)} className="bg-slate-950 border-slate-700" />
               <div className="flex gap-2">
                 <Input type="number" placeholder="Cena zakupu" value={priceBuy} onChange={(e) => setPriceBuy(e.target.value)} className="bg-slate-950 border-slate-700" />
                 <Input type="number" placeholder="Cena sprzedaży" value={priceSell} onChange={(e) => setPriceSell(e.target.value)} className="bg-slate-950 border-slate-700" />
               </div>
               <Input placeholder="Opis" value={desc} onChange={(e) => setDesc(e.target.value)} className="bg-slate-950 border-slate-700" />
-              
-              <Button onClick={handleAddProduct} className="w-full bg-teal-600 hover:bg-teal-700">Zapisz w Bazie</Button>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Dostawca</label>
+                <Select onValueChange={setSupplierId} value={supplierId}>
+                  <SelectTrigger className="bg-slate-950 border-slate-700 text-slate-100">
+                    <SelectValue placeholder="Wybierz dostawcę..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {suppliers.map((s) => (
+                      <SelectItem key={s.id} value={s.id.toString()}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button onClick={handleAddProduct} className="w-full bg-indigo-600 hover:bg-indigo-500 mt-2">Dodaj produkt</Button>
               {message && <p className="text-red-400 text-sm text-center">{message}</p>}
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      
       <div className="rounded-md border border-slate-800 bg-slate-900/50">
         <Table>
           <TableHeader>
             <TableRow className="border-slate-800 hover:bg-transparent">
-              <TableHead className="w-[100px] text-slate-400">ID</TableHead>
-              <TableHead className="text-slate-400">Nazwa Produktu</TableHead>
+              <TableHead className="w-[80px] text-slate-400">ID</TableHead>
+              <TableHead className="text-slate-400">Nazwa produktu</TableHead>
               <TableHead className="text-slate-400 text-center">Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map((product) => (
-              <TableRow key={product.id} className="border-slate-800 hover:bg-slate-800/50 transition-colors">
-                <TableCell className="font-medium text-slate-300">#{product.id}</TableCell>
-                <TableCell className="text-slate-100">{product.name}</TableCell>
-                <TableCell className="text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    {product.isActive === 1 ? (
-                      <>
-                        <span className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)] animate-pulse"></span>
-                        <span className="text-xs text-green-400 uppercase tracking-wider font-bold">Active</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="w-3 h-3 rounded-full bg-red-500 opacity-80"></span>
-                        <span className="text-xs text-red-400 uppercase tracking-wider font-bold">Disactive</span>
-                      </>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {products.length === 0 && (
+            {products.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={2} className="h-24 text-center text-slate-500">
-                  Brak produktów w Matrycy.
+                <TableCell colSpan={3} className="h-24 text-center text-slate-500">
+                  Brak produktów.
                 </TableCell>
               </TableRow>
+            ) : (
+              products.map((product) => (
+                <TableRow key={product.id} className="border-slate-800 hover:bg-slate-800/50 transition-colors">
+                  <TableCell className="font-medium text-slate-400">#{product.id}</TableCell>
+                  <TableCell className="text-slate-100">{product.name}</TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      {product.isActive === 1 ? (
+                        <>
+                          <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.8)] animate-pulse"></span>
+                          <span className="text-xs text-green-400 uppercase tracking-wider font-semibold">Aktywny</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="w-2 h-2 rounded-full bg-red-500 opacity-70"></span>
+                          <span className="text-xs text-red-400 uppercase tracking-wider font-semibold">Nieaktywny</span>
+                        </>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>

@@ -119,14 +119,22 @@ export const WarehousesPage = () => {
               <TableHead className="text-slate-400">Nazwa Obiektu</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {warehouses.map((warehouse) => (
+            <TableBody>
+            {warehouses.length === 0 ? (
+              <TableRow>
+              <TableCell colSpan={2} className="h-24 text-center text-slate-500">
+                Brak Magazynów.
+              </TableCell>
+              </TableRow>
+            ) : (
+              warehouses.map((warehouse) => (
               <TableRow key={warehouse.id} className="border-slate-800 hover:bg-slate-800/50 transition-colors">
                 <TableCell className="font-medium text-slate-300">#{warehouse.id}</TableCell>
                 <TableCell className="text-slate-100">{warehouse.name}</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
+              ))
+            )}
+            </TableBody>
         </Table>
       </div>
     </div>

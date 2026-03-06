@@ -40,12 +40,13 @@ export const Layout=()=> {
         <Link to="/dashboard"><Button variant="ghost" className="navLink">Magazyn</Button></Link>
         <Link to="/products"><Button variant="ghost" className="navLink">Lista Produktów</Button></Link>
         <Link to="/warehouses"><Button variant="ghost" className="navLink">Magazyny</Button></Link>
-
+        <Link to="/suppliers"><Button variant="ghost" className="navLink">Dostawcy</Button></Link>
         {role === "ADMIN" && (
           <div className="mt-8 border-t border-zinc-700 pt-4 flex flex-col gap-4">
             <h3 className="text-xs uppercase text-zinc-500 font-bold tracking-wider">Strefa Admina</h3>
             <Link to="/admin/workers"><Button variant="ghost" className="navLink">Pracownicy</Button></Link>
             <Link to="/admin/logs"><Button variant="ghost" className="navLink">Logi Systemowe</Button></Link>
+            
           </div>
         )}
 
