@@ -10,10 +10,19 @@ const ADD_NEWP_URL = "http://localhost:8081/api/products"
 const SUPPLIERS_URL = "http://localhost:8081/api/data/suppliers"
 
 interface ProductsData {
-  id: number; name: string; isActive: number;
+  id: number;
+  name: string;
+  isActive: number;
+  priceBuy: number;
+  priceSell: number;
+  p_desc: string;
+  supplierName: string;
+  idSupplier: number;
 }
+
 interface SupplierData {
-  id: number; name: string;
+  id: number;
+  name: string;
 }
 
 export const ProductsPage = () => {
@@ -70,22 +79,14 @@ export const ProductsPage = () => {
     const token = localStorage.getItem("ziibd_token")
     if (!token) return
 
-    const payload = editingId
-      ? {
-          id: editingId,
-          name: newName || null,
-          priceBuy: priceBuy ? parseFloat(priceBuy) : null,
-          priceSell: priceSell ? parseFloat(priceSell) : null,
-          description: desc || null,
-          idSupplier: supplierId ? parseInt(supplierId) : null
-        }
-      : {
-          name: newName,
-          price_buy: parseFloat(priceBuy),
-          price_sell: parseFloat(priceSell),
-          p_desc: desc,
-          id_supplier: supplierId ? parseInt(supplierId) : null
-        }
+    // Payload używa nazw pól zgodnych z Twoim AddProductRequest w Javie
+    const payload = {
+      name: newName,
+      price_buy: priceBuy ? parseFloat(priceBuy) : 0,
+      price_sell: priceSell ? parseFloat(priceSell) : 0,
+      p_desc: desc,
+      id_supplier: supplierId ? parseInt(supplierId) : null
+    }
 
     const url = editingId ? `${ADD_NEWP_URL}/${editingId}` : ADD_NEWP_URL
     const method = editingId ? "PUT" : "POST"
@@ -123,10 +124,7 @@ export const ProductsPage = () => {
 
         <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) resetForm(); setIsDialogOpen(open) }}>
           <DialogTrigger asChild>
-            <Button
-              className="bg-indigo-600 hover:bg-indigo-500"
-              onClick={() => { resetForm(); setIsDialogOpen(true) }}
-            >
+            <Button className="bg-indigo-600 hover:bg-indigo-500" onClick={() => { resetForm(); setIsDialogOpen(true) }}>
               + Dodaj produkt
             </Button>
           </DialogTrigger>
@@ -172,32 +170,37 @@ export const ProductsPage = () => {
             <TableRow className="border-slate-800 hover:bg-transparent">
               <TableHead className="w-[80px] text-slate-400">ID</TableHead>
               <TableHead className="text-slate-400">Nazwa produktu</TableHead>
-              <TableHead className="text-slate-400 text-center">Status</TableHead>
+              <TableHead className="text-slate-400">Dostawca</TableHead>
+              <TableHead className="text-right text-slate-400">Ceny (K/S)</TableHead>
+              <TableHead className="text-center text-slate-400">Status</TableHead>
               <TableHead className="text-right text-slate-400">Akcje</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {products.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center text-slate-500">Brak produktów.</TableCell>
+                <TableCell colSpan={6} className="h-24 text-center text-slate-500">Brak produktów.</TableCell>
               </TableRow>
             ) : (
               products.map((product) => (
                 <TableRow key={product.id} className="border-slate-800 hover:bg-slate-800/50 transition-colors">
                   <TableCell className="font-medium text-slate-400">#{product.id}</TableCell>
-                  <TableCell className="text-slate-100">{product.name}</TableCell>
+                  <TableCell className="text-slate-100">
+                    <div>{product.name}</div>
+                    <div className="text-[10px] text-slate-500">{product.p_desc}</div>
+                  </TableCell>
+                  <TableCell className="text-slate-300">
+                    {product.supplierName || "Brak"}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs">
+                    <span className="text-red-400">{product.priceBuy}</span> / <span className="text-green-400">{product.priceSell}</span>
+                  </TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-2">
                       {product.isActive === 1 ? (
-                        <>
-                          <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.8)] animate-pulse"></span>
-                          <span className="text-xs text-green-400 uppercase tracking-wider font-semibold">Aktywny</span>
-                        </>
+                        <span className="text-xs text-green-400 font-semibold uppercase">Aktywny</span>
                       ) : (
-                        <>
-                          <span className="w-2 h-2 rounded-full bg-red-500 opacity-70"></span>
-                          <span className="text-xs text-red-400 uppercase tracking-wider font-semibold">Nieaktywny</span>
-                        </>
+                        <span className="text-xs text-red-400 font-semibold uppercase">Nieaktywny</span>
                       )}
                     </div>
                   </TableCell>
@@ -205,11 +208,15 @@ export const ProductsPage = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300"
+                      className="border-slate-700 bg-slate-800 text-slate-300"
                       onClick={() => {
                         resetForm()
                         setEditingId(product.id)
                         setNewName(product.name)
+                        setPriceBuy(product.priceBuy?.toString() || "")
+                        setPriceSell(product.priceSell?.toString() || "")
+                        setDesc(product.p_desc || "")
+                        setSupplierId(product.idSupplier?.toString() || "")
                         setIsDialogOpen(true)
                       }}
                     >
