@@ -29,8 +29,8 @@ export const DashboardPage = () => {
 
   const {selectedProduct, selectedWarehouse} = useInventory();
 
-  useEffect(() => {
-    const getData = async () => {
+  const fetchProd =()=>{
+     const getData = async () => {
       const token = localStorage.getItem("ziibd_token");
       if (!token) return;
 
@@ -53,6 +53,9 @@ export const DashboardPage = () => {
       if (sumData) setSummaries(sumData);
     };
     getData();
+  }
+  useEffect(() => {
+   fetchProd();
   }, []);
   const wykonajOperacje = async (typOperacji: "restock" | "dispatch") => {
     const token = localStorage.getItem("ziibd_token");
@@ -82,6 +85,7 @@ export const DashboardPage = () => {
 
       if (response.ok) {
         const textData = await response.text();
+        fetchProd();
         setInformation(`Sukces: ${textData}`);
       } else {
         const errorData = await response.json();
@@ -142,7 +146,7 @@ export const DashboardPage = () => {
     </div>
     <div className="w-full flex flex-col gap-5">
       <div>
-        <h2 className="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-1">Raport analityczny</h2>
+        <h2 className="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-1">Raport</h2>
         <p className="text-slate-600 text-xs">Aktualny stan magazynów</p>
       </div>
 
@@ -159,12 +163,12 @@ export const DashboardPage = () => {
                 
                 <div className="flex flex-col gap-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-slate-500 uppercase tracking-wide">Zapas</span>
+                    <span className="text-xs text-slate-500 uppercase tracking-wide">Przedmioty w magazynie</span>
                     <span className="font-mono text-xl font-bold text-slate-100">{summary.totalItems} <span className="text-xs text-slate-500 font-normal">szt.</span></span>
                   </div>
                   <div className="h-px bg-slate-800"/>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-slate-500 uppercase tracking-wide">Wartość</span>
+                    <span className="text-xs text-slate-500 uppercase tracking-wide">Wartość przedmiotów</span>
                     <span className="font-mono text-xl font-bold text-indigo-400">{summary.totalValue.toFixed(2)} <span className="text-xs text-slate-500 font-normal">PLN</span></span>
                   </div>
                 </div>

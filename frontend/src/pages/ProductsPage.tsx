@@ -10,7 +10,15 @@ const ADD_NEWP_URL = "http://localhost:8081/api/products"
 const SUPPLIERS_URL = "http://localhost:8081/api/data/suppliers"
 
 interface ProductsData {
-  id: number; name: string; isActive: number;
+  id: number;
+  name: string;
+  priceBuy: number;
+  priceSell: number;
+  description: string;
+  isActive: number;
+  idSupplier: number;
+  supplierName?: string;
+  supplier_name?: string; 
 }
 interface SupplierData {
   id: number; name: string;
@@ -70,14 +78,13 @@ export const ProductsPage = () => {
     const token = localStorage.getItem("ziibd_token")
     if (!token) return
 
-    const payload = editingId
+      const payload = editingId
       ? {
-          id: editingId,
           name: newName || null,
-          priceBuy: priceBuy ? parseFloat(priceBuy) : null,
-          priceSell: priceSell ? parseFloat(priceSell) : null,
-          description: desc || null,
-          idSupplier: supplierId ? parseInt(supplierId) : null
+          price_buy: priceBuy ? parseFloat(priceBuy) : null,
+          price_sell: priceSell ? parseFloat(priceSell) : null,
+          p_desc: desc || null,
+          id_supplier: supplierId ? parseInt(supplierId) : null
         }
       : {
           name: newName,
@@ -172,6 +179,9 @@ export const ProductsPage = () => {
             <TableRow className="border-slate-800 hover:bg-transparent">
               <TableHead className="w-[80px] text-slate-400">ID</TableHead>
               <TableHead className="text-slate-400">Nazwa produktu</TableHead>
+              <TableHead className="text-slate-400 text-center">Cena Kupna</TableHead>
+              <TableHead className="text-slate-400 text-center">Cena Sprzedaży</TableHead>
+              <TableHead className="text-slate-400 text-center">Nazwa Dostawcy</TableHead>
               <TableHead className="text-slate-400 text-center">Status</TableHead>
               <TableHead className="text-right text-slate-400">Akcje</TableHead>
             </TableRow>
@@ -179,13 +189,18 @@ export const ProductsPage = () => {
           <TableBody>
             {products.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center text-slate-500">Brak produktów.</TableCell>
+                <TableCell colSpan={7} className="h-24 text-center text-slate-500">Brak produktów</TableCell>
               </TableRow>
             ) : (
               products.map((product) => (
                 <TableRow key={product.id} className="border-slate-800 hover:bg-slate-800/50 transition-colors">
                   <TableCell className="font-medium text-slate-400">#{product.id}</TableCell>
                   <TableCell className="text-slate-100">{product.name}</TableCell>
+                  <TableCell className="text-slate-100">{product.priceBuy}</TableCell>
+                  <TableCell className="text-slate-100">{product.priceSell}</TableCell>
+                  <TableCell className="text-slate-100 text-center">
+  {product.supplierName || product.supplier_name || "Brak Dostawcy"}
+</TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-2">
                       {product.isActive === 1 ? (
@@ -207,10 +222,17 @@ export const ProductsPage = () => {
                       size="sm"
                       className="border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300"
                       onClick={() => {
-                        resetForm()
-                        setEditingId(product.id)
-                        setNewName(product.name)
-                        setIsDialogOpen(true)
+                        resetForm(); 
+                        
+                        setEditingId(product.id);
+                        setNewName(product.name || "");
+                        
+                        setPriceBuy(product.priceBuy ? String(product.priceBuy) : "");
+                        setPriceSell(product.priceSell ? String(product.priceSell) : "");
+                        setDesc(product.description || "");
+                        setSupplierId(product.idSupplier ? String(product.idSupplier) : "");
+                        
+                        setIsDialogOpen(true); 
                       }}
                     >
                       Edytuj

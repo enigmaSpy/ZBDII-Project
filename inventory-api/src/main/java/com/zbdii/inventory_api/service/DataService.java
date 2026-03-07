@@ -1,9 +1,6 @@
 package com.zbdii.inventory_api.service;
 
-import com.zbdii.inventory_api.record.ProductDto;
-import com.zbdii.inventory_api.record.SupplierDto;
-import com.zbdii.inventory_api.record.WarehouseDto;
-import com.zbdii.inventory_api.record.WarehouseSummaryDto;
+import com.zbdii.inventory_api.record.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,11 +14,20 @@ public class DataService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<ProductDto> getAllProducts() {
-        String sql = "SELECT id, name, is_active FROM Products ORDER BY name ASC";
+    public List<ProductDetailsDto> getAllProducts() {
+        String sql = "SELECT * FROM v_product_desc";
 
         return jdbcTemplate.query(sql, (rs, rowNum) ->
-                new ProductDto(rs.getLong("id"), rs.getString("name"), rs.getInt("is_active"))
+                new ProductDetailsDto(
+                        rs.getLong("id"),
+                        rs.getString("name"),
+                        rs.getDouble("price_buy"),
+                        rs.getDouble("price_sell"),
+                        rs.getString("description"),
+                        rs.getInt("is_active"),
+                        rs.getLong("id_supplier"),
+                        rs.getString("supplier_name")
+                )
         );
     }
 

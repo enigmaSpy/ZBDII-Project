@@ -8,4 +8,3 @@ FROM Warehouses w
 LEFT JOIN Inventory i ON w.id = i.id_warehouse
 LEFT JOIN Products p ON i.id_product = p.id
 GROUP BY w.id, w.name;
-COMMIT;
