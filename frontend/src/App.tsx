@@ -7,6 +7,7 @@ import { WarehousesPage } from "./pages/WarehousesPage"
 import { SuppliersPage } from "./pages/SuppliersPage"
 import { WorkersPage } from "./pages/WorkersPage"
 import { LogsPage } from "./pages/LogsPage"
+import { ProfilePage } from "./pages/ProfilPage"
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           
           <Route path="/products" element={<ProductsPage />} /> 
           <Route path="/warehouses" element={<WarehousesPage />} /> 

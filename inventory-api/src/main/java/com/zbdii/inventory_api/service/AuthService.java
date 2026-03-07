@@ -1,5 +1,6 @@
 package com.zbdii.inventory_api.service;
 
+import com.zbdii.inventory_api.record.ChangePasswordRequest;
 import com.zbdii.inventory_api.record.LoginRequest;
 import com.zbdii.inventory_api.record.LoginResult;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -36,5 +37,12 @@ public class AuthService {
 
             return cs.wasNull() ? null : new LoginResult(resultId, resultRole);
         });
+    }
+    public void changePassword(ChangePasswordRequest request, Long executorId){
+        String sql ="CALL pkg_auth.prc_change_pass(?,?,?)";
+        jdbcTemplate.update(sql,
+                request.oldPassword(),
+                request.newPassword(),
+                executorId);
     }
 }

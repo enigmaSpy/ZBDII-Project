@@ -20,8 +20,9 @@ CREATE OR REPLACE PACKAGE pkg_auth IS
     );
 
     PROCEDURE prc_change_pass(
-        p_id_user IN Users.id%TYPE,
-        p_password_hash IN Users.password_hash%TYPE
+    p_password_hash     IN Users.password_hash%TYPE,
+    p_password_hash_new IN Users.password_hash%TYPE,
+    p_id_user           IN Users.id%TYPE
     );
 END pkg_auth;
 /
@@ -100,24 +101,20 @@ PROCEDURE prc_login(
   
     
     PROCEDURE prc_change_pass(
-        p_id_user IN Users.id%TYPE,
-        p_password_hash IN Users.password_hash%TYPE
-    )IS
-        v_count NUMBER;
-    BEGIN
-        SELECT COUNT(*)
-        INTO v_count
-        FROM Users
-        WHERE id=p_id_user;
+    p_password_hash     IN Users.password_hash%TYPE,
+    p_password_hash_new IN Users.password_hash%TYPE,
+    p_id_user           IN Users.id%TYPE
+) IS
+BEGIN
+    UPDATE Users
+    SET password_hash = p_password_hash_new
+    WHERE id = p_id_user AND password_hash = p_password_hash;
 
-        IF v_count >0 THEN
-            UPDATE Users
-            SET password_hash = p_password_hash
-            WHERE id = p_id_user;
-            COMMIT;
-        ELSE 
-            RAISE_APPLICATION_ERROR(-20003, 'Uzytkownik nie istnieje');
-        END IF;
-    END prc_change_pass;
+    IF SQL%ROWCOUNT = 0 THEN
+        RAISE_APPLICATION_ERROR(-20004, 'Nieprawidłowe hasło lub użytkownik nie istnieje');
+    END IF;
+
+    COMMIT;
+END prc_change_pass;
 END pkg_auth;
 /

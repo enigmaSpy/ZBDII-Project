@@ -20,6 +20,7 @@ export const ProductsPage = () => {
   const [products, setProducts] = useState<ProductsData[]>([])
   const [suppliers, setSuppliers] = useState<SupplierData[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
 
   const [newName, setNewName] = useState("")
   const [priceBuy, setPriceBuy] = useState("")
@@ -28,13 +29,21 @@ export const ProductsPage = () => {
   const [supplierId, setSupplierId] = useState("")
   const [message, setMessage] = useState("")
 
+  const resetForm = () => {
+    setEditingId(null)
+    setNewName("")
+    setPriceBuy("")
+    setPriceSell("")
+    setDesc("")
+    setSupplierId("")
+    setMessage("")
+  }
+
   const fetchProducts = async () => {
     const token = localStorage.getItem("ziibd_token")
     if (!token) return
     try {
-      const res = await fetch(PRODUCTS_URL, {
-        headers: { "Authorization": `Bearer ${token}` }
-      })
+      const res = await fetch(PRODUCTS_URL, { headers: { "Authorization": `Bearer ${token}` } })
       if (res.ok) setProducts(await res.json())
     } catch (error) {
       console.error("Błąd pobierania produktów:", error)
@@ -45,9 +54,7 @@ export const ProductsPage = () => {
     const token = localStorage.getItem("ziibd_token")
     if (!token) return
     try {
-      const res = await fetch(SUPPLIERS_URL, {
-        headers: { "Authorization": `Bearer ${token}` }
-      })
+      const res = await fetch(SUPPLIERS_URL, { headers: { "Authorization": `Bearer ${token}` } })
       if (res.ok) setSuppliers(await res.json())
     } catch (error) {
       console.error("Błąd pobierania dostawców:", error)
@@ -59,30 +66,44 @@ export const ProductsPage = () => {
     fetchSuppliers()
   }, [])
 
-  const handleAddProduct = async () => {
+  const handleSaveProduct = async () => {
     const token = localStorage.getItem("ziibd_token")
     if (!token) return
 
-    try {
-      const res = await fetch(ADD_NEWP_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
+    const payload = editingId
+      ? {
+          id: editingId,
+          name: newName || null,
+          priceBuy: priceBuy ? parseFloat(priceBuy) : null,
+          priceSell: priceSell ? parseFloat(priceSell) : null,
+          description: desc || null,
+          idSupplier: supplierId ? parseInt(supplierId) : null
+        }
+      : {
           name: newName,
           price_buy: parseFloat(priceBuy),
           price_sell: parseFloat(priceSell),
           p_desc: desc,
-          id_supplier: parseInt(supplierId)
-        })
+          id_supplier: supplierId ? parseInt(supplierId) : null
+        }
+
+    const url = editingId ? `${ADD_NEWP_URL}/${editingId}` : ADD_NEWP_URL
+    const method = editingId ? "PUT" : "POST"
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
       })
 
       if (res.ok) {
         setIsDialogOpen(false)
         fetchProducts()
-        setNewName(""); setDesc(""); setPriceBuy(""); setPriceSell(""); setSupplierId(""); setMessage("")
+        resetForm()
       } else {
         const errorData = await res.json()
         setMessage(`Błąd: ${errorData.message || "Nieznany błąd"}`)
@@ -100,14 +121,19 @@ export const ProductsPage = () => {
           <p className="text-xs text-slate-500 mt-1">Lista zarejestrowanych produktów</p>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) resetForm(); setIsDialogOpen(open) }}>
           <DialogTrigger asChild>
-            <Button className="bg-indigo-600 hover:bg-indigo-500">+ Dodaj produkt</Button>
+            <Button
+              className="bg-indigo-600 hover:bg-indigo-500"
+              onClick={() => { resetForm(); setIsDialogOpen(true) }}
+            >
+              + Dodaj produkt
+            </Button>
           </DialogTrigger>
 
           <DialogContent className="bg-slate-900 border-slate-800 text-slate-100">
             <DialogHeader>
-              <DialogTitle>Nowy produkt</DialogTitle>
+              <DialogTitle>{editingId ? `Edytuj produkt #${editingId}` : "Nowy produkt"}</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col gap-3 py-4">
               <Input placeholder="Nazwa produktu" value={newName} onChange={(e) => setNewName(e.target.value)} className="bg-slate-950 border-slate-700" />
@@ -125,15 +151,15 @@ export const ProductsPage = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {suppliers.map((s) => (
-                      <SelectItem key={s.id} value={s.id.toString()}>
-                        {s.name}
-                      </SelectItem>
+                      <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <Button onClick={handleAddProduct} className="w-full bg-indigo-600 hover:bg-indigo-500 mt-2">Dodaj produkt</Button>
+              <Button onClick={handleSaveProduct} className="w-full bg-indigo-600 hover:bg-indigo-500 mt-2">
+                {editingId ? "Zapisz zmiany" : "Dodaj produkt"}
+              </Button>
               {message && <p className="text-red-400 text-sm text-center">{message}</p>}
             </div>
           </DialogContent>
@@ -147,14 +173,13 @@ export const ProductsPage = () => {
               <TableHead className="w-[80px] text-slate-400">ID</TableHead>
               <TableHead className="text-slate-400">Nazwa produktu</TableHead>
               <TableHead className="text-slate-400 text-center">Status</TableHead>
+              <TableHead className="text-right text-slate-400">Akcje</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {products.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={3} className="h-24 text-center text-slate-500">
-                  Brak produktów.
-                </TableCell>
+                <TableCell colSpan={4} className="h-24 text-center text-slate-500">Brak produktów.</TableCell>
               </TableRow>
             ) : (
               products.map((product) => (
@@ -175,6 +200,21 @@ export const ProductsPage = () => {
                         </>
                       )}
                     </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300"
+                      onClick={() => {
+                        resetForm()
+                        setEditingId(product.id)
+                        setNewName(product.name)
+                        setIsDialogOpen(true)
+                      }}
+                    >
+                      Edytuj
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))

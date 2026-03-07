@@ -41,6 +41,7 @@ export const Layout=()=> {
         <Link to="/products"><Button variant="ghost" className="navLink">Lista Produktów</Button></Link>
         <Link to="/warehouses"><Button variant="ghost" className="navLink">Magazyny</Button></Link>
         <Link to="/suppliers"><Button variant="ghost" className="navLink">Dostawcy</Button></Link>
+        
         {role === "ADMIN" && (
           <div className="mt-8 border-t border-zinc-700 pt-4 flex flex-col gap-4">
             <h3 className="text-xs uppercase text-zinc-500 font-bold tracking-wider">Strefa Admina</h3>
@@ -50,8 +51,15 @@ export const Layout=()=> {
           </div>
         )}
 
-        <div className="mt-auto pt-4 border-t border-zinc-700">
+        <div className="mt-auto pt-4 border-t border-zinc-700 flex flex-col gap-1.5">
            <div className="text-xs text-zinc-500 mb-2">Zalogowano jako: <span className="text-zinc-300">{role}</span></div>
+           
+            <Link to="/profile">
+            <Button variant="secondary" className="w-full cursor-pointer bg-indigo-600">
+              Zmień hasło
+            </Button>
+            </Link>
+           
            <Button variant="destructive" className="w-full cursor-pointer" onClick={wyloguj}>Wyloguj</Button>
         </div>
       </div>

@@ -23,4 +23,14 @@ public class ProductService {
                 executor_id);
     }
 
+    public void editProduct(Long productId, AddProductRequest request, Long executorId){
+        String sql = "CALL pkg_inventory.prc_edit_product(?,?,?,?,?,?)";
+        jdbcTemplate.update(sql,
+                productId,
+                request.name(),
+                request.price_buy(),
+                request.price_sell(),
+                request.p_desc(),
+                request.id_supplier());
+    }
 }

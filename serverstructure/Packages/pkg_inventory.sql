@@ -22,9 +22,17 @@ CREATE OR REPLACE PACKAGE pkg_inventory IS
         p_id_sup     IN Products.id_supplier%TYPE,
         p_id_user    IN Users.id%TYPE
     );
-
+    
+    PROCEDURE prc_edit_product(
+    p_id         IN Products.id%TYPE,
+    p_name       IN Products.name%TYPE,
+    p_price_buy  IN Products.price_buy%TYPE,
+    p_price_sell IN Products.price_sell%TYPE,
+    p_desc       IN Products.description%TYPE,     
+    p_id_supplier IN Products.id_supplier%TYPE
+    );
 END pkg_inventory;
-
+/
 
 CREATE OR REPLACE PACKAGE BODY pkg_inventory IS
 
@@ -123,6 +131,30 @@ CREATE OR REPLACE PACKAGE BODY pkg_inventory IS
             ROLLBACK;
             RAISE_APPLICATION_ERROR(-20001, SQLERRM);
     END prc_add_product;
+   
+    PROCEDURE prc_edit_product(
+    p_id         IN Products.id%TYPE,
+    p_name       IN Products.name%TYPE,
+    p_price_buy  IN Products.price_buy%TYPE,
+    p_price_sell IN Products.price_sell%TYPE,
+    p_desc       IN Products.description%TYPE,     
+    p_id_supplier IN Products.id_supplier%TYPE
+) IS
+BEGIN
+    UPDATE Products
+    SET
+        name         = NVL(p_name, name),
+        price_buy    = NVL(p_price_buy, price_buy),
+        price_sell   = NVL(p_price_sell, price_sell),
+        description  = NVL(p_desc, description),  
+        id_supplier  = NVL(p_id_supplier, id_supplier)
+    WHERE id = p_id;
 
+    IF SQL%ROWCOUNT = 0 THEN
+        RAISE_APPLICATION_ERROR(-20007, 'Produkt o podanym ID nie istnieje');
+    END IF;
+
+    COMMIT;
+END prc_edit_product;
 END pkg_inventory;
 /

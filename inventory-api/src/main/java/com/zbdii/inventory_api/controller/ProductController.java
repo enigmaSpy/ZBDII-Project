@@ -27,4 +27,15 @@ public class ProductController {
         productService.addProduct(request, executorId);
         return "Dodano produkt: "+ request.name();
     }
+
+    @PutMapping("{id}")
+    public String editProduct(
+            @PathVariable("id") Long productId,
+            @RequestBody AddProductRequest request,
+            @RequestHeader("Authorization") String authHeader
+    ){
+        Long executorId = jwtService.extractUserId(authHeader);
+        productService.editProduct(productId, request, executorId);
+        return "Zaktualizowano produkt nr: "+ productId;
+    }
 }

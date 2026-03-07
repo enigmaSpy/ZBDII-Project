@@ -14,6 +14,9 @@ public class GlobalExceptionHandler {
         if(errorMessage.contains("ORA-20001")){
             errorMessage = "Brak wystarczającej ilości towaru na stanie";
         }
+        if(errorMessage.contains("ORA-20004")){
+            errorMessage = "BNiepoprawne dane";
+        }
         ApiErrorResponse responseBox = new ApiErrorResponse(400, errorMessage);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBox);
     }
